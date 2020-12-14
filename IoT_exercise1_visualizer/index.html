@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualizer</title>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+  <script>
+    const ctx = document.getElementById('canvas').getContext('2d');
+
+    const url = '/data.csv';
+
+    fetch(url).then((res) => res.text()).then((text) => {
+      const data = text.trim().split(/\r?\n/).map((row) => row.split(','));
+
+      console.log(data);
+
+      const datamap = new Map();
+
+      for (const [id, time, lux, md] of data) {
+        if (!datamap.has(id)) {
+          datamap.set(id, []);
+        }
+        datamap.get(id).push(lux);
+      }
+
+      const datasets = Array.from(datamap.entries(), ([id, data]) => {
+        return {
+          label: id,
+          lineTension: 0,
+          data
+        };
+      });
+
+      const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.map((row) => row[1]),
+          datasets
+        },
+        options: {
+          scales: {
+            xAxes: [{
+              type: 'time'
+            }]
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
